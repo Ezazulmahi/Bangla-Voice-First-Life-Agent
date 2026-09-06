@@ -182,6 +182,7 @@ export interface MobilePackage {
   data_gb: number;
   validity_days: number;
   price_bdt: number;
+  updated_at: string;
 }
 
 export function listMobilePackages() {
@@ -232,4 +233,27 @@ export function updateReminder(id: number, patch: Partial<Pick<Reminder, "enable
 
 export function deleteReminder(id: number) {
   return apiFetch<void>(`/reminders/${id}`, { method: "DELETE" });
+}
+
+// ---- push notifications ----
+
+export function getVapidPublicKey() {
+  return apiFetch<{ public_key: string }>("/push/vapid-public-key");
+}
+
+export function subscribePush(subscription: PushSubscriptionJSON) {
+  return apiFetch<void>("/push/subscribe", {
+    method: "POST",
+    body: JSON.stringify({
+      endpoint: subscription.endpoint,
+      keys: { p256dh: subscription.keys!.p256dh, auth: subscription.keys!.auth },
+    }),
+  });
+}
+
+export function unsubscribePush(endpoint: string) {
+  return apiFetch<void>("/push/unsubscribe", {
+    method: "POST",
+    body: JSON.stringify({ endpoint }),
+  });
 }

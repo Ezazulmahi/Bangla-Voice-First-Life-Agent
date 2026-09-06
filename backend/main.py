@@ -1,12 +1,23 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from config import settings
-from routers import audio, auth, conversations, reminders, tools
+from routers import audio, auth, conversations, push, reminders, tools
+from services.reminder_scheduler import start_scheduler, stop_scheduler
 
-app = FastAPI(title="Sohai API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    start_scheduler()
+    yield
+    stop_scheduler()
+
+
+app = FastAPI(title="Sohai API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,6 +41,7 @@ app.include_router(conversations.router)
 app.include_router(audio.router)
 app.include_router(tools.router)
 app.include_router(reminders.router)
+app.include_router(push.router)
 
 
 @app.get("/health")

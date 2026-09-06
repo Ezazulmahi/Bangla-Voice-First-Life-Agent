@@ -52,8 +52,13 @@ def update_reminder(
     db: Session = Depends(get_db),
 ):
     reminder = _get_owned_reminder(reminder_id, current_user, db)
-    for field, value in payload.model_dump(exclude_unset=True).items():
+    updates = payload.model_dump(exclude_unset=True)
+    for field, value in updates.items():
         setattr(reminder, field, value)
+    if "due_at" in updates or updates.get("enabled") is True:
+        # A pushed-back due date, or re-enabling a reminder, should be able
+        # to notify again.
+        reminder.notified_at = None
     db.commit()
     db.refresh(reminder)
     return reminder

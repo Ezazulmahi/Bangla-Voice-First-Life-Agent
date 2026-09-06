@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     media_dir: str = "media"
     env: str = "development"
 
+    vapid_public_key: str = ""
+    vapid_private_key: str = ""
+    vapid_claim_email: str = "admin@example.com"
+    reminder_poll_seconds: int = 60
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 

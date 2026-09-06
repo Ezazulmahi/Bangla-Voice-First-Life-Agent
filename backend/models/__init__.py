@@ -6,6 +6,7 @@ from .mobile_package import MobilePackage, Operator
 from .complaint_draft import ComplaintDraft
 from .reminder import NotifyChannel, Reminder
 from .process_doc import ProcessDoc
+from .push_subscription import PushSubscription
 
 __all__ = [
     "User",
@@ -21,4 +22,5 @@ __all__ = [
     "Reminder",
     "NotifyChannel",
     "ProcessDoc",
+    "PushSubscription",
 ]

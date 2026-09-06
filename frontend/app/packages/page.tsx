@@ -71,6 +71,16 @@ export default function PackagesPage() {
             </div>
           );
         })}
+
+        {packages && packages.length > 0 && (
+          <div className="bn-line" style={{ marginTop: 8, fontSize: 11.5 }}>
+            মূল্য সর্বশেষ হালনাগাদ · Prices last updated:{" "}
+            {new Date(
+              Math.max(...packages.map((p) => new Date(p.updated_at).getTime()))
+            ).toLocaleDateString()}
+            {" — "}অপারেটরদের ওয়েবসাইটে গিয়ে নিশ্চিত করে নিন · verify with the operator before purchasing.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ import {
   updateMe,
   verifyOtp,
 } from "@/lib/api";
+import { ensurePushSubscription } from "@/lib/push";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -54,6 +55,7 @@ export default function SignInPage() {
       setToken(res.access_token);
       setStoredPhone(phone.trim());
       await updateMe({ preferred_language: language }).catch(() => {});
+      ensurePushSubscription().catch(() => {});
       router.push("/home");
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "কিছু একটা ভুল হয়েছে");

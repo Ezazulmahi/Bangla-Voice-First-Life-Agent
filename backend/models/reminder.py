@@ -20,4 +20,7 @@ class Reminder(Base):
     due_at = Column(DateTime(timezone=True), nullable=False)
     enabled = Column(Boolean, nullable=False, default=True)
     notify_channel = Column(Enum(NotifyChannel), nullable=False, default=NotifyChannel.app)
+    # Set once a push notification has been sent for this due date, so the
+    # scheduler doesn't re-notify on every poll tick.
+    notified_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

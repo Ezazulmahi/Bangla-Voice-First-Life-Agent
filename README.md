@@ -51,6 +51,21 @@ pipeline (Whisper STT) and the agent (tool-routing LLM). Without it the server s
 endpoint that doesn't need the LLM works — but `/conversations/{id}/audio`,
 `/tools/complaint-draft`, and the agent's other tools return `503` until the key is set.
 
+**Push notifications** (reminders firing even when the app is closed) need a VAPID key pair —
+generate one and add it to `.env`:
+```bash
+python -m scripts.generate_vapid_keys   # prints VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY
+```
+Without these, reminders still work fully in-app (History list, toggling, editing) — they just
+won't push a browser notification when due.
+
+**Mobile package prices** have no live data source (see the architecture notes below) — refresh
+them manually from a source you trust (operator app, USSD, customer care):
+```bash
+python -m scripts.update_mobile_packages path/to/packages.json   # add --replace-all to prune discontinued ones
+```
+The Packages screen shows a "last updated" date so users can see how fresh the data actually is.
+
 ### Frontend
 ```bash
 cd frontend

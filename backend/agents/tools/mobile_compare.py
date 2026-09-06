@@ -42,6 +42,7 @@ def run(decision, db: Session, user: User) -> tuple[str, dict | None]:
                 "validity_days": p.validity_days,
                 "price_bdt": float(p.price_bdt),
                 "best": p.id == best.id,
+                "updated_at": p.updated_at.isoformat(),
             }
             for p in packages
         ]
