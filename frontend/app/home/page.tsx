@@ -1,15 +1,31 @@
+"use client";
+
 import Link from "next/link";
-import BrandTopBar from "@/components/BrandTopBar";
+import { useEffect, useState } from "react";
+
 import BottomNav from "@/components/BottomNav";
+import BrandTopBar from "@/components/BrandTopBar";
+import { getMe } from "@/lib/api";
+import { useAuthGuard } from "@/lib/useAuthGuard";
 
 export default function HomePage() {
+  const token = useAuthGuard();
+  const [phone, setPhone] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!token) return;
+    getMe()
+      .then((user) => setPhone(user.phone_number))
+      .catch(() => {});
+  }, [token]);
+
   return (
     <div className="screen">
       <div className="status-bar" />
       <BrandTopBar />
       <div className="content">
         <div className="greeting">
-          <h1>Hi, Tahmid</h1>
+          <h1>Hi{phone ? `, ${phone}` : ""}</h1>
           <div className="bn-line">আজ আপনাকে কীভাবে সাহায্য করতে পারি?</div>
         </div>
         <div className="mic-zone">

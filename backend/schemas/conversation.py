@@ -6,6 +6,8 @@ from pydantic import BaseModel
 class ConversationOut(BaseModel):
     id: int
     created_at: datetime
+    last_transcript: str | None = None
+    last_tool_used: str | None = None
 
     class Config:
         from_attributes = True
