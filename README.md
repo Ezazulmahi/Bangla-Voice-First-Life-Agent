@@ -41,8 +41,15 @@ python -m venv venv
 venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 cp .env.example .env         # add your DATABASE_URL, GROQ_API_KEY, etc.
+alembic upgrade head         # create tables
+python -m scripts.seed_data  # seed mobile packages + process docs
 uvicorn main:app --reload
 ```
+
+A `GROQ_API_KEY` (from [console.groq.com](https://console.groq.com)) is required for the voice
+pipeline (Whisper STT) and the agent (tool-routing LLM). Without it the server still runs — every
+endpoint that doesn't need the LLM works — but `/conversations/{id}/audio`,
+`/tools/complaint-draft`, and the agent's other tools return `503` until the key is set.
 
 ### Frontend
 ```bash
