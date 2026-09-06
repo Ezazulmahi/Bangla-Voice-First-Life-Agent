@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     jwt_expire_minutes: int = 60 * 24 * 7
 
     groq_api_key: str = ""
-    groq_llm_model: str = "llama-3.3-70b-versatile"
+    groq_llm_model: str = "openai/gpt-oss-120b"
     groq_stt_model: str = "whisper-large-v3-turbo"
 
     media_dir: str = "media"

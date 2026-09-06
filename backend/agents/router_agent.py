@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Literal, Optional
 
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from agents.llm import get_llm
 from agents.registry import TOOL_REGISTRY
 from models import User
+from utils.timezone import BD_TZ
 
 # Import tool modules for their register_tool side effects.
 from agents.tools import (  # noqa: F401
@@ -79,13 +80,14 @@ Tools:
 - set_reminder: বিল, অ্যাপয়েন্টমেন্ট বা কাজের জন্য রিমাইন্ডার সেট করতে চাইলে
 - explain_process: কোনো সরকারি/প্রাতিষ্ঠানিক প্রক্রিয়া (যেমন NID সংশোধন) সম্পর্কে জানতে চাইলে
 
-বর্তমান সময় (UTC): {now}. আপেক্ষিক তারিখ (যেমন "আগামীকাল") থেকে due_at একটি ISO 8601 timestamp \
-হিসেবে হিসাব করো।"""
+বর্তমান সময় (বাংলাদেশ সময়, UTC+6): {now}. ব্যবহারকারী সবসময় বাংলাদেশ সময় অনুযায়ী কথা বলে — "আগামীকাল \
+সকাল ৯টা"-এর মতো আপেক্ষিক সময় থেকে due_at হিসাব করার সময় অবশ্যই +06:00 অফসেট ব্যবহার করো (যেমন \
+2026-09-07T09:00:00+06:00), UTC-তে রূপান্তর কোরো না।"""
 
 
 def route(transcript: str, user: User, db: Session) -> RouterResult:
     llm = get_llm().with_structured_output(RouterDecision)
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(BD_TZ).isoformat()
     decision: RouterDecision = llm.invoke(
         [
             SystemMessage(content=SYSTEM_PROMPT.format(now=now)),

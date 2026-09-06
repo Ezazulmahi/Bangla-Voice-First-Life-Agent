@@ -1,9 +1,10 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
 from agents.registry import register_tool
 from models import Reminder, User
+from utils.timezone import BD_TZ
 
 
 @register_tool("set_reminder")
@@ -17,7 +18,7 @@ def run(decision, db: Session, user: User) -> tuple[str, dict | None]:
         except ValueError:
             due_at = None
     if due_at is None:
-        due_at = datetime.now(timezone.utc) + timedelta(days=1)
+        due_at = datetime.now(BD_TZ) + timedelta(days=1)
 
     reminder = Reminder(
         user_id=user.id,
