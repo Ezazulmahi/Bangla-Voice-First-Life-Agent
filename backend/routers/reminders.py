@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -31,14 +31,17 @@ def create_reminder(
 
 @router.get("", response_model=list[ReminderOut])
 def list_reminders(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    q: str | None = Query(default=None, description="filter by title/message substring"),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
-    return (
-        db.query(Reminder)
-        .filter(Reminder.user_id == current_user.id)
-        .order_by(Reminder.due_at.asc())
-        .all()
-    )
+    query = db.query(Reminder).filter(Reminder.user_id == current_user.id)
+    if q:
+        like = f"%{q}%"
+        query = query.filter((Reminder.title.ilike(like)) | (Reminder.message.ilike(like)))
+    return query.order_by(Reminder.due_at.asc()).limit(limit).offset(offset).all()
 
 
 @router.patch("/{reminder_id}", response_model=ReminderOut)

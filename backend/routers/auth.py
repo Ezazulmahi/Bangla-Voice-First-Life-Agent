@@ -7,7 +7,7 @@ from config import settings
 from database import get_db
 from deps import get_current_user
 from models import OtpCode, User
-from schemas.auth import RequestOtpIn, RequestOtpOut, TokenOut, UserOut, VerifyOtpIn
+from schemas.auth import RequestOtpIn, RequestOtpOut, TokenOut, UpdatePreferencesIn, UserOut, VerifyOtpIn
 from security import create_access_token, generate_otp, hash_otp
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -27,8 +27,11 @@ def request_otp(payload: RequestOtpIn, db: Session = Depends(get_db)):
     db.add(otp)
     db.commit()
 
-    # No SMS gateway is wired up yet, so the code is only ever logged server-side.
-    print(f"[Sohai OTP] {payload.phone_number} -> {code}")
+    # No SMS gateway is wired up yet. Only log the code in development —
+    # logging phone numbers + OTPs in plaintext is not acceptable once this
+    # runs anywhere but a local dev box.
+    if settings.env == "development":
+        print(f"[Sohai OTP] {payload.phone_number} -> {code}")
 
     debug_code = code if settings.env == "development" else None
     return RequestOtpOut(message="OTP sent", debug_code=debug_code)
@@ -68,4 +71,17 @@ def verify_otp(payload: VerifyOtpIn, db: Session = Depends(get_db)):
 
 @router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)):
+    return current_user
+
+
+@router.patch("/me", response_model=UserOut)
+def update_me(
+    payload: UpdatePreferencesIn,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(current_user, field, value)
+    db.commit()
+    db.refresh(current_user)
     return current_user

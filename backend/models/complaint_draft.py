@@ -7,7 +7,10 @@ class ComplaintDraft(Base):
     __tablename__ = "complaint_drafts"
 
     id = Column(Integer, primary_key=True)
-    conversation_turn_id = Column(Integer, ForeignKey("conversation_turns.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    conversation_turn_id = Column(
+        Integer, ForeignKey("conversation_turns.id", ondelete="SET NULL"), nullable=True
+    )
     company_name = Column(String(200), nullable=False)
     issue_description = Column(Text, nullable=False)
     generated_text = Column(Text, nullable=False)

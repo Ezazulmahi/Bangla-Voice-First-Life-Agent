@@ -6,6 +6,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from agents.language import language_directive
 from agents.llm import get_llm
 from agents.registry import TOOL_REGISTRY
 from models import User
@@ -56,8 +57,9 @@ class RouterDecision(BaseModel):
     # explain_process
     process_question: Optional[str] = None
 
-    reply_bn: str = Field(
-        description="A short, natural spoken reply in Bangla acknowledging the request "
+    reply_text: str = Field(
+        description="A short, natural spoken reply acknowledging the request, in the "
+        "language specified by the system prompt's language directive "
         "(used verbatim if tool is 'none', otherwise the tool's own reply takes over)"
     )
 
@@ -88,15 +90,16 @@ Tools:
 def route(transcript: str, user: User, db: Session) -> RouterResult:
     llm = get_llm().with_structured_output(RouterDecision)
     now = datetime.now(BD_TZ).isoformat()
+    lang = user.preferred_language.value
     decision: RouterDecision = llm.invoke(
         [
-            SystemMessage(content=SYSTEM_PROMPT.format(now=now)),
+            SystemMessage(content=SYSTEM_PROMPT.format(now=now) + language_directive(lang)),
             HumanMessage(content=transcript),
         ]
     )
 
     if decision.tool == "none" or decision.tool not in TOOL_REGISTRY:
-        return RouterResult(tool_used=None, reply_text=decision.reply_bn, data=None)
+        return RouterResult(tool_used=None, reply_text=decision.reply_text, data=None)
 
     tool_fn = TOOL_REGISTRY[decision.tool]
     reply_text, data = tool_fn(decision, db, user)

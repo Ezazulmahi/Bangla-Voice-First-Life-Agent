@@ -23,7 +23,9 @@ class ConversationTurn(Base):
     __tablename__ = "conversation_turns"
 
     id = Column(Integer, primary_key=True)
-    conversation_id = Column(Integer, ForeignKey("conversations.id"), nullable=False, index=True)
+    conversation_id = Column(
+        Integer, ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True
+    )
     role = Column(Enum(TurnRole), nullable=False)
     audio_file_path = Column(String(500), nullable=True)
     transcript_text = Column(Text, nullable=False)

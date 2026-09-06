@@ -28,6 +28,17 @@ export function setStoredPhone(phone: string) {
   localStorage.setItem(PHONE_KEY, phone);
 }
 
+const LANGUAGE_KEY = "sohai_language";
+
+export function getStoredLanguage(): "bn" | "en" {
+  if (typeof window === "undefined") return "bn";
+  return localStorage.getItem(LANGUAGE_KEY) === "en" ? "en" : "bn";
+}
+
+export function setStoredLanguage(lang: "bn" | "en") {
+  localStorage.setItem(LANGUAGE_KEY, lang);
+}
+
 export function getStoredConversationId(): number | null {
   if (typeof window === "undefined") return null;
   const raw = localStorage.getItem(CONVERSATION_KEY);
@@ -92,8 +103,19 @@ export function verifyOtp(phoneNumber: string, code: string) {
   });
 }
 
+export interface Me {
+  id: number;
+  phone_number: string;
+  audio_retention_opt_in: boolean;
+  preferred_language: "bn" | "en";
+}
+
 export function getMe() {
-  return apiFetch<{ id: number; phone_number: string; audio_retention_opt_in: boolean }>("/auth/me");
+  return apiFetch<Me>("/auth/me");
+}
+
+export function updateMe(patch: Partial<Pick<Me, "preferred_language" | "audio_retention_opt_in">>) {
+  return apiFetch<Me>("/auth/me", { method: "PATCH", body: JSON.stringify(patch) });
 }
 
 // ---- conversations ----
@@ -111,6 +133,19 @@ export function createConversation() {
 
 export function listConversations() {
   return apiFetch<ConversationSummary[]>("/conversations");
+}
+
+export interface ConversationTurn {
+  id: number;
+  role: "user" | "agent";
+  transcript_text: string;
+  audio_file_path: string | null;
+  tool_used: string | null;
+  created_at: string;
+}
+
+export function getConversationHistory(conversationId: number) {
+  return apiFetch<ConversationTurn[]>(`/conversations/${conversationId}/history`);
 }
 
 export interface AudioTurnResult {
@@ -168,6 +203,10 @@ export function createComplaintDraft(companyName: string, issueDescription: stri
   });
 }
 
+export function listComplaintDrafts() {
+  return apiFetch<ComplaintDraft[]>("/tools/complaint-drafts");
+}
+
 // ---- reminders ----
 
 export interface Reminder {
@@ -189,4 +228,8 @@ export function updateReminder(id: number, patch: Partial<Pick<Reminder, "enable
     method: "PATCH",
     body: JSON.stringify(patch),
   });
+}
+
+export function deleteReminder(id: number) {
+  return apiFetch<void>(`/reminders/${id}`, { method: "DELETE" });
 }

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -24,6 +26,12 @@ class UserOut(BaseModel):
     id: int
     phone_number: str
     audio_retention_opt_in: bool
+    preferred_language: str
 
     class Config:
         from_attributes = True
+
+
+class UpdatePreferencesIn(BaseModel):
+    preferred_language: Literal["bn", "en"] | None = None
+    audio_retention_opt_in: bool | None = None

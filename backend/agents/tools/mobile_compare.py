@@ -11,14 +11,27 @@ def run(decision, db: Session, user: User) -> tuple[str, dict | None]:
         query = query.filter(MobilePackage.price_bdt <= decision.max_price)
     packages = query.order_by(MobilePackage.price_bdt.asc()).limit(5).all()
 
+    lang = user.preferred_language.value
+
     if not packages:
-        return "দুঃখিত, এই মুহূর্তে কোনো মিলে যাওয়া প্যাকেজ পাওয়া যায়নি।", {"packages": []}
+        no_match = {
+            "bn": "দুঃখিত, এই মুহূর্তে কোনো মিলে যাওয়া প্যাকেজ পাওয়া যায়নি।",
+            "en": "Sorry, no matching packages were found right now.",
+        }
+        return no_match[lang], {"packages": []}
 
     best = packages[0]
-    reply = (
-        f"{best.operator.value.capitalize()}-এর {best.name} প্যাকেজটি সবচেয়ে ভালো মূল্যে "
-        f"— মাত্র ৳{best.price_bdt} টাকা।"
-    )
+    reply_templates = {
+        "bn": (
+            f"{best.operator.value.capitalize()}-এর {best.name} প্যাকেজটি সবচেয়ে ভালো মূল্যে "
+            f"— মাত্র ৳{best.price_bdt} টাকা।"
+        ),
+        "en": (
+            f"{best.operator.value.capitalize()}'s {best.name} package is the best value "
+            f"— just ৳{best.price_bdt}."
+        ),
+    }
+    reply = reply_templates[lang]
     data = {
         "packages": [
             {

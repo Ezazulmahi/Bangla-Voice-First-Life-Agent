@@ -9,7 +9,9 @@ from utils.timezone import BD_TZ
 
 @register_tool("set_reminder")
 def run(decision, db: Session, user: User) -> tuple[str, dict | None]:
-    title = decision.reminder_title or "রিমাইন্ডার"
+    lang = user.preferred_language.value
+    default_title = {"bn": "রিমাইন্ডার", "en": "Reminder"}
+    title = decision.reminder_title or default_title[lang]
 
     due_at = None
     if decision.due_at:
@@ -30,7 +32,11 @@ def run(decision, db: Session, user: User) -> tuple[str, dict | None]:
     db.commit()
     db.refresh(reminder)
 
-    reply = f"ঠিক আছে, '{title}'-এর জন্য একটি রিমাইন্ডার সেট করা হয়েছে।"
+    reply_templates = {
+        "bn": f"ঠিক আছে, '{title}'-এর জন্য একটি রিমাইন্ডার সেট করা হয়েছে।",
+        "en": f"Done — I've set a reminder for '{title}'.",
+    }
+    reply = reply_templates[lang]
     data = {
         "id": reminder.id,
         "title": reminder.title,

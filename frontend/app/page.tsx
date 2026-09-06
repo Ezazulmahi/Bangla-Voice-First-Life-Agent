@@ -3,7 +3,16 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { ApiError, requestOtp, setStoredPhone, setToken, verifyOtp } from "@/lib/api";
+import {
+  ApiError,
+  getStoredLanguage,
+  requestOtp,
+  setStoredLanguage,
+  setStoredPhone,
+  setToken,
+  updateMe,
+  verifyOtp,
+} from "@/lib/api";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -13,6 +22,7 @@ export default function SignInPage() {
   const [debugCode, setDebugCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [language, setLanguage] = useState<"bn" | "en">(getStoredLanguage());
 
   async function handleSendCode() {
     setError(null);
@@ -43,6 +53,7 @@ export default function SignInPage() {
       const res = await verifyOtp(phone.trim(), code.trim());
       setToken(res.access_token);
       setStoredPhone(phone.trim());
+      await updateMe({ preferred_language: language }).catch(() => {});
       router.push("/home");
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "কিছু একটা ভুল হয়েছে");
@@ -101,8 +112,28 @@ export default function SignInPage() {
           )}
 
           <div className="lang-toggle">
-            <span className="active">বাংলা</span>
-            <span>English</span>
+            <span
+              className={language === "bn" ? "active" : ""}
+              role="button"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setLanguage("bn");
+                setStoredLanguage("bn");
+              }}
+            >
+              বাংলা
+            </span>
+            <span
+              className={language === "en" ? "active" : ""}
+              role="button"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setLanguage("en");
+                setStoredLanguage("en");
+              }}
+            >
+              English
+            </span>
           </div>
         </div>
       </div>

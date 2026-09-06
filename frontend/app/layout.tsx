@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Baloo_2, Hind_Siliguri, Inter } from "next/font/google";
 import "./globals.css";
+import ReminderNudger from "@/components/ReminderNudger";
 
 const baloo = Baloo_2({
   subsets: ["latin"],
@@ -33,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="bn">
       <body className={`${baloo.variable} ${hindSiliguri.variable} ${inter.variable}`}>
+        <ReminderNudger />
         {children}
       </body>
     </html>

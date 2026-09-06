@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -29,12 +29,17 @@ def create_conversation(
 
 @router.get("", response_model=list[ConversationOut])
 def list_conversations(
-    current_user: User = Depends(get_current_user), db: Session = Depends(get_db)
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     conversations = (
         db.query(Conversation)
         .filter(Conversation.user_id == current_user.id)
         .order_by(Conversation.created_at.desc())
+        .limit(limit)
+        .offset(offset)
         .all()
     )
     result = []

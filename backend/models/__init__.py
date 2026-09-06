@@ -1,4 +1,4 @@
-from .user import User
+from .user import PreferredLanguage, User
 from .otp_code import OtpCode
 from .conversation import Conversation
 from .conversation_turn import ConversationTurn, ToolName, TurnRole
@@ -9,6 +9,7 @@ from .process_doc import ProcessDoc
 
 __all__ = [
     "User",
+    "PreferredLanguage",
     "OtpCode",
     "Conversation",
     "ConversationTurn",

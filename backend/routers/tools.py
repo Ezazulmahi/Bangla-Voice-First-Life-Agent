@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from agents.tools.complaint_draft import generate_and_save
 from database import get_db
 from deps import get_current_user
-from models import MobilePackage, User
+from models import ComplaintDraft, MobilePackage, User
 from schemas.complaint import ComplaintDraftIn, ComplaintDraftOut
 from schemas.mobile_package import MobilePackageOut
 
@@ -32,4 +32,27 @@ def create_complaint_draft(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    return generate_and_save(db, payload.company_name, payload.issue_description)
+    return generate_and_save(
+        db,
+        current_user.id,
+        payload.company_name,
+        payload.issue_description,
+        lang=current_user.preferred_language.value,
+    )
+
+
+@router.get("/complaint-drafts", response_model=list[ComplaintDraftOut])
+def list_complaint_drafts(
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(ComplaintDraft)
+        .filter(ComplaintDraft.user_id == current_user.id)
+        .order_by(ComplaintDraft.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+        .all()
+    )
